@@ -18,14 +18,10 @@ public class MainView extends JFrame {
         frame.add(menuPanel, BorderLayout.NORTH);
         gameHistoryView = new GameHistoryView();
         frame.add(gameHistoryView, BorderLayout.EAST);
-        boardsView = new BoardsView(gameHistoryView);
+        boardsView = new BoardsView();
         frame.add(boardsView, BorderLayout.CENTER);
 
         frame.setLocationRelativeTo(null);
         frame.setVisible(true);
-    }
-
-    public static void main(String[] args) {
-        SwingUtilities.invokeLater(MainView::new);
     }
 }
