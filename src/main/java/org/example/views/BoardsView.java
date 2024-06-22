@@ -19,6 +19,7 @@ public class BoardsView extends JPanel implements ActionListener {
     GameHistoryView gameHistoryView;
     int previousBoardIndex = -1;
     boolean[] boardWon = new boolean[9];
+    boolean boardFrozen = false;
 
     public BoardsView(GameHistoryView gameHistoryView) {
         this.gameHistoryView = gameHistoryView;
@@ -122,6 +123,15 @@ public class BoardsView extends JPanel implements ActionListener {
             boardWon[boardIndex] = true;
             updateScore(player);
         }
+
+        if (boardState[boardIndex][0] == player &&
+                boardState[boardIndex][4] == player &&
+                boardState[boardIndex][8] == player) {
+            highlightBoard(boardIndex);
+            disableBoardAfterWin(boardIndex);
+            boardWon[boardIndex] = true;
+            updateScore(player);
+        }
     }
 
     public void resetBoard() {
@@ -164,10 +174,41 @@ public class BoardsView extends JPanel implements ActionListener {
         if (xWins >= 5 || oWins >= 5) {
             String winner = (xWins >= 5) ? "Player X" : "Player O";
             JOptionPane.showMessageDialog(this, winner + " wins the game!");
+            System.out.println("Freezing the board...");
+            freezeBoard();
         }
     }
 
+    private void freezeBoard() {
+        boardFrozen = true;
+        for (int i = 0; i < 9; i++) {
+            panels[i].setEnabled(false);
+            for (int j = 0; j < 9; j++) {
+                buttons[i][j].setEnabled(false);
+            }
+        }
+    }
+
+    private boolean hasAvailableBoards() {
+        for (boolean won : boardWon) {
+            if (!won) {
+                return true;
+            }
+        }
+        return false;
+    }
+
     private void chooseRandomBoardForNextMove() {
+        if (boardFrozen) {
+            return;
+        }
+
+        if (!hasAvailableBoards()) {
+            JOptionPane.showMessageDialog(this, "No available boards left. The game is a draw!");
+            freezeBoard();
+            return;
+        }
+
         int boardIndex;
         do {
             boardIndex = random.nextInt(9);

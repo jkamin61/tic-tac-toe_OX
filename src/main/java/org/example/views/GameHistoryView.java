@@ -49,5 +49,7 @@ public class GameHistoryView extends JPanel {
     public void clearHistory() {
         tableModel.setRowCount(0);
         moveNumber = 0;
+        xWins = 0;
+        oWins = 0;
     }
 }
