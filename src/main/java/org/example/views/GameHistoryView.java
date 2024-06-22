@@ -1,38 +1,43 @@
 package org.example.views;
 
 import javax.swing.*;
-import javax.swing.text.DefaultCaret;
+import javax.swing.table.DefaultTableModel;
 import java.awt.*;
 
 public class GameHistoryView extends JPanel {
-    private final JTextArea textArea;
+    private final JTable table;
+    private final DefaultTableModel tableModel;
+    private int moveNumber;
     private int xWins;
     private int oWins;
 
     public GameHistoryView() {
         setLayout(new BorderLayout());
 
-        textArea = new JTextArea(20, 20);
-        textArea.setBorder(BorderFactory.createTitledBorder("Game History"));
-        textArea.setEditable(false);
-        JScrollPane scrollPane = new JScrollPane(textArea);
+        String[] columnNames = {"Move number", "Player", "Board", "Field on board"};
+        tableModel = new DefaultTableModel(columnNames, 0);
+
+        table = new JTable(tableModel);
+        JScrollPane scrollPane = new JScrollPane(table);
         add(scrollPane, BorderLayout.CENTER);
 
-        DefaultCaret caret = (DefaultCaret) textArea.getCaret();
-        caret.setUpdatePolicy(DefaultCaret.ALWAYS_UPDATE);
+        moveNumber = 0;
     }
 
     public void addMove(char player, int buttonIndex, int boardIndex) {
         String position = getPosition(buttonIndex);
-        String message = String.format("Player %s placed %s on %s on board %d.\n", player, player, position, (boardIndex + 1));
-        textArea.append(message);
+        moveNumber++;
+        Object[] rowData = {moveNumber, player, boardIndex + 1, position};
+        tableModel.addRow(rowData);
     }
 
     public void updateScore(int xWins, int oWins) {
         this.xWins = xWins;
         this.oWins = oWins;
-        String scoreMessage = String.format("Score - Player X: %d, Player O: %d\n\n", xWins, oWins);
-        textArea.append(scoreMessage);
+        String xScoreMessage = String.format("Player X: %d wins", xWins);
+        String oScoreMessage = String.format("Player O: %d wins", oWins);
+        Object[] rowData = {xScoreMessage, oScoreMessage, "", ""};
+        tableModel.addRow(rowData);
     }
 
     private String getPosition(int buttonIndex) {
@@ -42,6 +47,7 @@ public class GameHistoryView extends JPanel {
     }
 
     public void clearHistory() {
-        textArea.setText("");
+        tableModel.setRowCount(0);
+        moveNumber = 0;
     }
 }

@@ -17,6 +17,8 @@ public class BoardsView extends JPanel implements ActionListener {
     int xWins;
     int oWins;
     GameHistoryView gameHistoryView;
+    int previousBoardIndex = -1;
+    boolean[] boardWon = new boolean[9];
 
     public BoardsView(GameHistoryView gameHistoryView) {
         this.gameHistoryView = gameHistoryView;
@@ -39,11 +41,11 @@ public class BoardsView extends JPanel implements ActionListener {
             }
         }
 
-        // Initialize boardState to empty
         for (char[] chars : boardState) {
             Arrays.fill(chars, ' ');
         }
 
+        chooseRandomBoardForNextMove();
     }
 
     @Override
@@ -52,7 +54,6 @@ public class BoardsView extends JPanel implements ActionListener {
         int boardIndex = -1;
         int cellIndex = -1;
 
-        // Find the board and cell index
         for (int i = 0; i < panels.length; i++) {
             for (int j = 0; j < 9; j++) {
                 if (buttons[i][j] == button) {
@@ -64,6 +65,11 @@ public class BoardsView extends JPanel implements ActionListener {
         }
 
         if (boardIndex == -1 || cellIndex == -1) return;
+
+        if (boardState[boardIndex][cellIndex] != ' ') {
+            JOptionPane.showMessageDialog(this, "This cell is already occupied.");
+            return;
+        }
 
         int row = cellIndex / 3;
         int col = cellIndex % 3;
@@ -81,17 +87,19 @@ public class BoardsView extends JPanel implements ActionListener {
         searchForWinner(boardIndex, row, col);
         gameHistoryView.addMove(xTurn ? 'O' : 'X', cellIndex, boardIndex);
 
+        previousBoardIndex = boardIndex;
+        chooseRandomBoardForNextMove();
     }
 
     public void searchForWinner(int boardIndex, int row, int col) {
         char player = boardState[boardIndex][row * 3 + col];
-        // Check rows
+
         if (boardState[boardIndex][row * 3] == player &&
                 boardState[boardIndex][row * 3 + 1] == player &&
                 boardState[boardIndex][row * 3 + 2] == player) {
-//            announceWinner(player);
             highlightBoard(boardIndex);
             disableBoardAfterWin(boardIndex);
+            boardWon[boardIndex] = true;
             updateScore(player);
             return;
         }
@@ -99,9 +107,9 @@ public class BoardsView extends JPanel implements ActionListener {
         if (boardState[boardIndex][col] == player &&
                 boardState[boardIndex][col + 3] == player &&
                 boardState[boardIndex][col + 6] == player) {
-//            announceWinner(player);
             highlightBoard(boardIndex);
             disableBoardAfterWin(boardIndex);
+            boardWon[boardIndex] = true;
             updateScore(player);
             return;
         }
@@ -109,26 +117,18 @@ public class BoardsView extends JPanel implements ActionListener {
         if (boardState[boardIndex][2] == player &&
                 boardState[boardIndex][4] == player &&
                 boardState[boardIndex][6] == player) {
-//            announceWinner(player);
             highlightBoard(boardIndex);
             disableBoardAfterWin(boardIndex);
+            boardWon[boardIndex] = true;
             updateScore(player);
         }
-    }
-
-    private void announceWinner(char player) {
-        if (player == 'X') {
-            xWins++;
-        } else if (player == 'O') {
-            oWins++;
-        }
-        JOptionPane.showMessageDialog(this, player + " wins!");
     }
 
     public void resetBoard() {
         for (int i = 0; i < 9; i++) {
             panels[i].setBackground(null);
             gameHistoryView.clearHistory();
+            boardWon[i] = false;
             for (int j = 0; j < 9; j++) {
                 boardState[i][j] = ' ';
                 buttons[i][j].setText("");
@@ -136,6 +136,7 @@ public class BoardsView extends JPanel implements ActionListener {
             }
         }
         xTurn = true;
+        chooseRandomBoardForNextMove();
     }
 
     private void highlightBoard(int boardIndex) {
@@ -164,5 +165,25 @@ public class BoardsView extends JPanel implements ActionListener {
             String winner = (xWins >= 5) ? "Player X" : "Player O";
             JOptionPane.showMessageDialog(this, winner + " wins the game!");
         }
+    }
+
+    private void chooseRandomBoardForNextMove() {
+        int boardIndex;
+        do {
+            boardIndex = random.nextInt(9);
+        } while (boardIndex == previousBoardIndex || boardWon[boardIndex]);
+
+        for (int i = 0; i < 9; i++) {
+            if (boardWon[i]) {
+                panels[i].setBackground(Color.RED);
+            } else {
+                panels[i].setBackground(null);
+            }
+            for (int j = 0; j < 9; j++) {
+                buttons[i][j].setEnabled(i == boardIndex && !boardWon[i]);
+            }
+        }
+
+        panels[boardIndex].setBackground(Color.YELLOW);
     }
 }
