@@ -40,4 +40,8 @@ public class GameHistoryView extends JPanel {
         int col = buttonIndex % 3 + 1;
         return "(" + row + "," + col + ")";
     }
+
+    public void clearHistory() {
+        textArea.setText("");
+    }
 }

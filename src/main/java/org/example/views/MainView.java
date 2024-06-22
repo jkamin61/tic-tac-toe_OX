@@ -13,12 +13,13 @@ public class MainView extends JFrame {
         frame = new JFrame("Tic Tac Toe");
         frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
         frame.setSize(1200, 600);
-
-        menuPanel = new MenuPanel();
-        frame.add(menuPanel, BorderLayout.NORTH);
+        
         gameHistoryView = new GameHistoryView();
+        boardsView = new BoardsView(gameHistoryView);
+        menuPanel = new MenuPanel(boardsView);
+
         frame.add(gameHistoryView, BorderLayout.EAST);
-        boardsView = new BoardsView();
+        frame.add(menuPanel, BorderLayout.NORTH);
         frame.add(boardsView, BorderLayout.CENTER);
 
         frame.setLocationRelativeTo(null);
