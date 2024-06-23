@@ -121,6 +121,14 @@ public class BoardsView extends JPanel implements ActionListener {
     public void searchForWinner(int boardIndex, int row, int col) {
         char player = boardState[boardIndex][row * 3 + col];
 
+        if (checkForTie(boardIndex)) {
+            highlightTiedBoard(boardIndex);
+            disableBoardAfterWin(boardIndex);
+            boardPlayed[boardIndex] = true;
+            announceWinner();
+            return;
+        }
+
         if (boardState[boardIndex][row * 3] == player &&
                 boardState[boardIndex][row * 3 + 1] == player &&
                 boardState[boardIndex][row * 3 + 2] == player) {
@@ -158,23 +166,15 @@ public class BoardsView extends JPanel implements ActionListener {
             boardPlayed[boardIndex] = true;
             updateScore(player);
         }
-
-        checkForTie(boardIndex);
     }
 
-    private void checkForTie(int boardIndex) {
-        boolean isTie = true;
+    private boolean checkForTie(int boardIndex) {
         for (int i = 0; i < 9; i++) {
             if (boardState[boardIndex][i] == ' ') {
-                isTie = false;
-                break;
+                return false;
             }
         }
-        if (isTie && !boardPlayed[boardIndex]) {
-            highlightTiedBoard(boardIndex);
-            disableBoardAfterWin(boardIndex);
-            boardPlayed[boardIndex] = true;
-        }
+        return true;
     }
 
     public void resetBoard() {
@@ -225,6 +225,10 @@ public class BoardsView extends JPanel implements ActionListener {
             oWins++;
         }
         gameHistoryView.updateScore(xWins, oWins);
+        announceWinner();
+    }
+
+    private void announceWinner() {
         if (checkForBoardsPlayed() == 9) {
             if (xWins > oWins) {
                 JOptionPane.showMessageDialog(this, "Player X wins the game!");
