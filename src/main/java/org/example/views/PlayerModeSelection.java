@@ -24,12 +24,13 @@ public class PlayerModeSelection extends JFrame {
         panel.add(buttonPanel, BorderLayout.CENTER);
 
         singlePlayerButton.addActionListener(e -> {
-            setVisible(false); // ukrycie bieżącej ramki
-            new MainView();    // utworzenie nowego widoku
+            setVisible(false);
+            new ComputerDifficultySelection();
         });
 
         multiPlayerButton.addActionListener(e -> {
-            // Logic to start multi player game
+            setVisible(false);
+            new MainView();
         });
 
         getContentPane().add(panel);
