@@ -18,7 +18,7 @@ public class BoardsView extends JPanel implements ActionListener {
     int oWins;
     GameHistoryView gameHistoryView;
     int previousBoardIndex = -1;
-    boolean[] boardWon = new boolean[9];
+    boolean[] boardPlayed = new boolean[9];
     boolean boardFrozen = false;
 
     public BoardsView(GameHistoryView gameHistoryView) {
@@ -89,7 +89,33 @@ public class BoardsView extends JPanel implements ActionListener {
         gameHistoryView.addMove(xTurn ? 'O' : 'X', cellIndex, boardIndex);
 
         previousBoardIndex = boardIndex;
-        chooseRandomBoardForNextMove();
+
+        if (checkForBoardsPlayed() < 8) {
+            chooseRandomBoardForNextMove();
+        } else {
+            enableButtons();
+        }
+    }
+
+    private void enableButtons() {
+        for (int i = 0; i < 9; i++) {
+            if (!boardPlayed[i]) {
+                panels[i].setBackground(Color.YELLOW);
+                for (int j = 0; j < 9; j++) {
+                    buttons[i][j].setEnabled(true);
+                }
+            }
+        }
+    }
+
+    private int checkForBoardsPlayed() {
+        int count = 0;
+        for (boolean won : boardPlayed) {
+            if (won) {
+                count++;
+            }
+        }
+        return count;
     }
 
     public void searchForWinner(int boardIndex, int row, int col) {
@@ -98,9 +124,9 @@ public class BoardsView extends JPanel implements ActionListener {
         if (boardState[boardIndex][row * 3] == player &&
                 boardState[boardIndex][row * 3 + 1] == player &&
                 boardState[boardIndex][row * 3 + 2] == player) {
-            highlightBoard(boardIndex);
+            highlightWonBoard(boardIndex);
             disableBoardAfterWin(boardIndex);
-            boardWon[boardIndex] = true;
+            boardPlayed[boardIndex] = true;
             updateScore(player);
             return;
         }
@@ -108,9 +134,9 @@ public class BoardsView extends JPanel implements ActionListener {
         if (boardState[boardIndex][col] == player &&
                 boardState[boardIndex][col + 3] == player &&
                 boardState[boardIndex][col + 6] == player) {
-            highlightBoard(boardIndex);
+            highlightWonBoard(boardIndex);
             disableBoardAfterWin(boardIndex);
-            boardWon[boardIndex] = true;
+            boardPlayed[boardIndex] = true;
             updateScore(player);
             return;
         }
@@ -118,27 +144,47 @@ public class BoardsView extends JPanel implements ActionListener {
         if (boardState[boardIndex][2] == player &&
                 boardState[boardIndex][4] == player &&
                 boardState[boardIndex][6] == player) {
-            highlightBoard(boardIndex);
+            highlightWonBoard(boardIndex);
             disableBoardAfterWin(boardIndex);
-            boardWon[boardIndex] = true;
+            boardPlayed[boardIndex] = true;
             updateScore(player);
         }
 
         if (boardState[boardIndex][0] == player &&
                 boardState[boardIndex][4] == player &&
                 boardState[boardIndex][8] == player) {
-            highlightBoard(boardIndex);
+            highlightWonBoard(boardIndex);
             disableBoardAfterWin(boardIndex);
-            boardWon[boardIndex] = true;
+            boardPlayed[boardIndex] = true;
             updateScore(player);
+        }
+
+        checkForTie(boardIndex);
+    }
+
+    private void checkForTie(int boardIndex) {
+        boolean isTie = true;
+        for (int i = 0; i < 9; i++) {
+            if (boardState[boardIndex][i] == ' ') {
+                isTie = false;
+                break;
+            }
+        }
+        if (isTie && !boardPlayed[boardIndex]) {
+            highlightTiedBoard(boardIndex);
+            disableBoardAfterWin(boardIndex);
+            boardPlayed[boardIndex] = true;
         }
     }
 
     public void resetBoard() {
+        boardFrozen = false;
+        xWins = 0;
+        oWins = 0;
         for (int i = 0; i < 9; i++) {
             panels[i].setBackground(null);
             gameHistoryView.clearHistory();
-            boardWon[i] = false;
+            boardPlayed[i] = false;
             for (int j = 0; j < 9; j++) {
                 boardState[i][j] = ' ';
                 buttons[i][j].setText("");
@@ -149,10 +195,18 @@ public class BoardsView extends JPanel implements ActionListener {
         chooseRandomBoardForNextMove();
     }
 
-    private void highlightBoard(int boardIndex) {
+    private void highlightWonBoard(int boardIndex) {
         for (int i = 0; i < 9; i++) {
             if (i == boardIndex) {
                 panels[i].setBackground(Color.RED);
+            }
+        }
+    }
+
+    private void highlightTiedBoard(int boardIndex) {
+        for (int i = 0; i < 9; i++) {
+            if (i == boardIndex) {
+                panels[i].setBackground(Color.BLUE);
             }
         }
     }
@@ -171,10 +225,18 @@ public class BoardsView extends JPanel implements ActionListener {
             oWins++;
         }
         gameHistoryView.updateScore(xWins, oWins);
-        if (xWins >= 5 || oWins >= 5) {
+        if (checkForBoardsPlayed() == 9) {
+            if (xWins > oWins) {
+                JOptionPane.showMessageDialog(this, "Player X wins the game!");
+            } else if (oWins > xWins) {
+                JOptionPane.showMessageDialog(this, "Player O wins the game!");
+            } else {
+                JOptionPane.showMessageDialog(this, "It's a tie!");
+            }
+            freezeBoard();
+        } else if (xWins >= 5 || oWins >= 5) {
             String winner = (xWins >= 5) ? "Player X" : "Player O";
             JOptionPane.showMessageDialog(this, winner + " wins the game!");
-            System.out.println("Freezing the board...");
             freezeBoard();
         }
     }
@@ -190,7 +252,7 @@ public class BoardsView extends JPanel implements ActionListener {
     }
 
     private boolean hasAvailableBoards() {
-        for (boolean won : boardWon) {
+        for (boolean won : boardPlayed) {
             if (!won) {
                 return true;
             }
@@ -199,29 +261,26 @@ public class BoardsView extends JPanel implements ActionListener {
     }
 
     private void chooseRandomBoardForNextMove() {
-        if (boardFrozen) {
-            return;
-        }
-
         if (!hasAvailableBoards()) {
-            JOptionPane.showMessageDialog(this, "No available boards left. The game is a draw!");
             freezeBoard();
             return;
         }
-
+        if (boardFrozen) {
+            return;
+        }
         int boardIndex;
         do {
             boardIndex = random.nextInt(9);
-        } while (boardIndex == previousBoardIndex || boardWon[boardIndex]);
+        } while (boardIndex == previousBoardIndex || boardPlayed[boardIndex]);
 
         for (int i = 0; i < 9; i++) {
-            if (boardWon[i]) {
+            if (boardPlayed[i]) {
                 panels[i].setBackground(Color.RED);
             } else {
                 panels[i].setBackground(null);
             }
             for (int j = 0; j < 9; j++) {
-                buttons[i][j].setEnabled(i == boardIndex && !boardWon[i]);
+                buttons[i][j].setEnabled(i == boardIndex && !boardPlayed[i]);
             }
         }
 
