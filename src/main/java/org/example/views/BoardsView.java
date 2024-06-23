@@ -5,10 +5,12 @@ import javax.swing.border.EmptyBorder;
 import java.awt.*;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
+import java.awt.event.KeyEvent;
+import java.awt.event.KeyListener;
 import java.util.Arrays;
 import java.util.Random;
 
-public class BoardsView extends JPanel implements ActionListener {
+public class BoardsView extends JPanel implements ActionListener, KeyListener {
     final JPanel[] panels = new JPanel[9];
     final JButton[][] buttons = new JButton[9][9];
     boolean xTurn = true;
@@ -26,6 +28,10 @@ public class BoardsView extends JPanel implements ActionListener {
 
         setLayout(new GridLayout(3, 3, 10, 10));
         setBorder(new EmptyBorder(10, 10, 10, 10));
+
+        setFocusable(true);
+        requestFocus();
+        addKeyListener(this);
 
         for (int i = 0; i < panels.length; i++) {
             panels[i] = new JPanel();
@@ -96,6 +102,7 @@ public class BoardsView extends JPanel implements ActionListener {
             enableButtons();
         }
     }
+
 
     private void enableButtons() {
         for (int i = 0; i < 9; i++) {
@@ -289,5 +296,95 @@ public class BoardsView extends JPanel implements ActionListener {
         }
 
         panels[boardIndex].setBackground(Color.YELLOW);
+    }
+
+    @Override
+    public void keyTyped(KeyEvent e) {
+        int key = e.getKeyCode();
+
+        // Mapowanie klawiszy numerycznych do indeksów pól na planszy
+        switch (key) {
+            case KeyEvent.VK_1:
+                selectCell(0);
+                break;
+            case KeyEvent.VK_2:
+                selectCell(1);
+                break;
+            case KeyEvent.VK_3:
+                selectCell(2);
+                break;
+            case KeyEvent.VK_4:
+                selectCell(3);
+                break;
+            case KeyEvent.VK_5:
+                selectCell(4);
+                break;
+            case KeyEvent.VK_6:
+                selectCell(5);
+                break;
+            case KeyEvent.VK_7:
+                selectCell(6);
+                break;
+            case KeyEvent.VK_8:
+                selectCell(7);
+                break;
+            case KeyEvent.VK_9:
+                selectCell(8);
+                break;
+            default:
+                break;
+        }
+    }
+
+    private void selectCell(int index) {
+        if (boardFrozen) {
+            return; // Jeśli plansza jest zamrożona, nie reaguj na klawisze
+        }
+
+        int boardIndex = previousBoardIndex; // Zakładam, że chcesz wybierać z ostatnio wylosowanej planszy
+        if (boardIndex == -1 || boardPlayed[boardIndex]) {
+            return; // Jeśli poprzednia plansza jest niezdefiniowana lub już wygrana, nie rób nic
+        }
+
+        if (boardState[boardIndex][index] != ' ') {
+            JOptionPane.showMessageDialog(this, "This cell is already occupied.");
+            return; // Jeśli komórka jest już zajęta, wyświetl komunikat i zakończ
+        }
+
+        int row = index / 3;
+        int col = index % 3;
+
+        JButton button = buttons[boardIndex][index];
+        if (xTurn) {
+            button.setText("X");
+            boardState[boardIndex][index] = 'X';
+        } else {
+            button.setText("O");
+            boardState[boardIndex][index] = 'O';
+        }
+        button.setEnabled(false);
+        xTurn = !xTurn;
+
+        searchForWinner(boardIndex, row, col);
+        gameHistoryView.addMove(xTurn ? 'O' : 'X', index, boardIndex);
+
+        previousBoardIndex = boardIndex;
+
+        if (checkForBoardsPlayed() < 8) {
+            chooseRandomBoardForNextMove();
+        } else {
+            enableButtons();
+        }
+    }
+
+
+    @Override
+    public void keyPressed(KeyEvent e) {
+
+    }
+
+    @Override
+    public void keyReleased(KeyEvent e) {
+
     }
 }
