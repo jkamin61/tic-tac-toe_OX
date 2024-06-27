@@ -21,8 +21,15 @@ public class BoardsView extends JPanel implements ActionListener {
     boolean[] boardPlayed = new boolean[9];
     boolean boardFrozen = false;
 
+    final ImageIcon xIcon;
+    final ImageIcon oIcon;
+
     public BoardsView(GameHistoryView gameHistoryView) {
         this.gameHistoryView = gameHistoryView;
+
+//        xIcon = new ImageIcon("src/main/resources/X.png");
+        xIcon = scaleIcon(new ImageIcon("src/main/resources/X.png"), 50, 50);
+        oIcon = scaleIcon(new ImageIcon("src/main/resources/O.png"), 50, 50);
 
         setLayout(new GridLayout(3, 3, 10, 10));
         setBorder(new EmptyBorder(10, 10, 10, 10));
@@ -47,6 +54,12 @@ public class BoardsView extends JPanel implements ActionListener {
         }
 
         chooseRandomBoardForNextMove();
+    }
+
+    private ImageIcon scaleIcon(ImageIcon icon, int width, int height) {
+        Image img = icon.getImage();
+        Image scaledImg = img.getScaledInstance(width, height, Image.SCALE_SMOOTH);
+        return new ImageIcon(scaledImg);
     }
 
     @Override
@@ -76,10 +89,14 @@ public class BoardsView extends JPanel implements ActionListener {
         int col = cellIndex % 3;
 
         if (xTurn) {
-            button.setText("X");
+//            button.setText("X");
+            button.setIcon(xIcon);
+            button.setDisabledIcon(xIcon);
             boardState[boardIndex][cellIndex] = 'X';
         } else {
-            button.setText("O");
+//            button.setText("O");
+            button.setIcon(oIcon);
+            button.setDisabledIcon(oIcon);
             boardState[boardIndex][cellIndex] = 'O';
         }
         button.setEnabled(false);
@@ -204,11 +221,7 @@ public class BoardsView extends JPanel implements ActionListener {
     }
 
     private void highlightTiedBoard(int boardIndex) {
-        for (int i = 0; i < 9; i++) {
-            if (i == boardIndex) {
-                panels[i].setBackground(Color.BLUE);
-            }
-        }
+        panels[boardIndex].setBackground(Color.BLUE);
     }
 
     private void disableBoardAfterWin(int boardIndex) {
