@@ -27,7 +27,6 @@ public class BoardsView extends JPanel implements ActionListener {
     public BoardsView(GameHistoryView gameHistoryView) {
         this.gameHistoryView = gameHistoryView;
 
-//        xIcon = new ImageIcon("src/main/resources/X.png");
         xIcon = scaleIcon(new ImageIcon("src/main/resources/X.png"), 50, 50);
         oIcon = scaleIcon(new ImageIcon("src/main/resources/O.png"), 50, 50);
 
@@ -115,7 +114,7 @@ public class BoardsView extends JPanel implements ActionListener {
     private void enableButtons() {
         for (int i = 0; i < 9; i++) {
             if (!boardPlayed[i]) {
-                panels[i].setBackground(null);
+                panels[i].setBackground(Color.YELLOW);
                 for (int j = 0; j < 9; j++) {
                     buttons[i][j].setEnabled(true);
                 }
@@ -203,6 +202,7 @@ public class BoardsView extends JPanel implements ActionListener {
             for (int j = 0; j < 9; j++) {
                 boardState[i][j] = ' ';
                 buttons[i][j].setText("");
+                buttons[i][j].setIcon(null);
                 buttons[i][j].setEnabled(true);
             }
         }
@@ -211,26 +211,19 @@ public class BoardsView extends JPanel implements ActionListener {
     }
 
     private void highlightWonBoard(int boardIndex) {
-        panels[boardIndex].removeAll();
-        char winner = xTurn ? 'O' : 'X';
-        JButton wonButton = new JButton(String.valueOf(winner));
-        wonButton.setFont(new Font("Arial", Font.BOLD, 50));
-        wonButton.setEnabled(false);
-        panels[boardIndex].setLayout(new GridBagLayout());
-        panels[boardIndex].add(wonButton, new GridBagConstraints());
-        panels[boardIndex].revalidate();
-        panels[boardIndex].repaint();
+        for (int i = 0; i < 9; i++) {
+            if (i == boardIndex) {
+                panels[i].setBackground(Color.RED);
+            }
+        }
     }
 
     private void highlightTiedBoard(int boardIndex) {
-        panels[boardIndex].removeAll();
-        JButton tiedButton = new JButton("-");
-        tiedButton.setFont(new Font("Arial", Font.BOLD, 50));
-        tiedButton.setEnabled(false);
-        panels[boardIndex].setLayout(new GridBagLayout());
-        panels[boardIndex].add(tiedButton, new GridBagConstraints());
-        panels[boardIndex].revalidate();
-        panels[boardIndex].repaint();
+        for (int i = 0; i < 9; i++) {
+            if (i == boardIndex) {
+                panels[i].setBackground(Color.BLUE);
+            }
+        }
     }
 
     private void disableBoardAfterWin(int boardIndex) {
@@ -251,15 +244,7 @@ public class BoardsView extends JPanel implements ActionListener {
     }
 
     private void announceWinner() {
-        boolean allBoardsPlayed = true;
-        for (boolean boardPlayed : boardPlayed) {
-            if (!boardPlayed) {
-                allBoardsPlayed = false;
-                break;
-            }
-        }
-
-        if (allBoardsPlayed) {
+        if (checkForBoardsPlayed() == 9) {
             if (xWins > oWins) {
                 JOptionPane.showMessageDialog(this, "Player X wins the game!");
             } else if (oWins > xWins) {
@@ -275,12 +260,10 @@ public class BoardsView extends JPanel implements ActionListener {
         }
     }
 
-
     private void freezeBoard() {
         boardFrozen = true;
         for (int i = 0; i < 9; i++) {
             panels[i].setEnabled(false);
-            panels[i].setBackground(null);
             for (int j = 0; j < 9; j++) {
                 buttons[i][j].setEnabled(false);
             }
@@ -309,19 +292,17 @@ public class BoardsView extends JPanel implements ActionListener {
             boardIndex = random.nextInt(9);
         } while (boardIndex == previousBoardIndex || boardPlayed[boardIndex]);
 
-        // Reset all panel backgrounds to null (default)
         for (int i = 0; i < 9; i++) {
-            panels[i].setBackground(null); // Ensure all panels have no background color initially
-        }
-
-        // Highlight the chosen board for the next move
-        panels[boardIndex].setBackground(Color.YELLOW);
-
-        // Enable buttons only for the chosen board
-        for (int i = 0; i < 9; i++) {
+            if (boardPlayed[i]) {
+                panels[i].setBackground(Color.RED);
+            } else {
+                panels[i].setBackground(null);
+            }
             for (int j = 0; j < 9; j++) {
-                buttons[i][j].setEnabled(i == boardIndex && !boardPlayed[i]); // Correctly enable/disable based on the current board index
+                buttons[i][j].setEnabled(i == boardIndex && !boardPlayed[i]);
             }
         }
+
+        panels[boardIndex].setBackground(Color.YELLOW);
     }
 }
