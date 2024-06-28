@@ -13,7 +13,7 @@ public class MainView extends JFrame {
         frame = new JFrame("Tic Tac Toe");
         frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
         frame.setSize(1200, 600);
-        
+
         gameHistoryView = new GameHistoryView();
         boardsView = new BoardsView(gameHistoryView);
         menuPanel = new MenuPanel(boardsView);
@@ -25,4 +25,5 @@ public class MainView extends JFrame {
         frame.setLocationRelativeTo(null);
         frame.setVisible(true);
     }
+
 }
