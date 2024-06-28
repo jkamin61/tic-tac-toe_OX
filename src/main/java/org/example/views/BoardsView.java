@@ -3,8 +3,7 @@ package org.example.views;
 import javax.swing.*;
 import javax.swing.border.EmptyBorder;
 import java.awt.*;
-import java.awt.event.ActionEvent;
-import java.awt.event.ActionListener;
+import java.awt.event.*;
 import java.util.Arrays;
 import java.util.Random;
 
@@ -20,6 +19,7 @@ public class BoardsView extends JPanel implements ActionListener {
     int previousBoardIndex = -1;
     boolean[] boardPlayed = new boolean[9];
     boolean boardFrozen = false;
+    int currentBoardIndex;
 
     final ImageIcon xIcon;
     final ImageIcon oIcon;
@@ -53,6 +53,30 @@ public class BoardsView extends JPanel implements ActionListener {
         }
 
         chooseRandomBoardForNextMove();
+
+        InputMap inputMap = getInputMap(JComponent.WHEN_IN_FOCUSED_WINDOW);
+        ActionMap actionMap = getActionMap();
+
+        int[] numpadMapping = {KeyEvent.VK_NUMPAD7, KeyEvent.VK_NUMPAD8, KeyEvent.VK_NUMPAD9,
+                KeyEvent.VK_NUMPAD4, KeyEvent.VK_NUMPAD5, KeyEvent.VK_NUMPAD6,
+                KeyEvent.VK_NUMPAD1, KeyEvent.VK_NUMPAD2, KeyEvent.VK_NUMPAD3};
+
+        for (int i = 0; i < 9; i++) {
+            final int index = i;
+            inputMap.put(KeyStroke.getKeyStroke(numpadMapping[i], 0), "numpad" + (i + 1));
+            actionMap.put("numpad" + (i + 1), new AbstractAction() {
+                @Override
+                public void actionPerformed(ActionEvent e) {
+                    if (buttons[currentBoardIndex][index].isEnabled()) {
+                        buttons[currentBoardIndex][index].doClick();
+                    }
+                }
+            });
+        }
+
+
+        setFocusable(true);
+        requestFocusInWindow();
     }
 
     private ImageIcon scaleIcon(ImageIcon icon, int width, int height) {
@@ -236,10 +260,9 @@ public class BoardsView extends JPanel implements ActionListener {
     private void updateScore(char player) {
         if (player == 'X') {
             xWins++;
-        } else {
+        } else if (player == 'O') {
             oWins++;
         }
-        gameHistoryView.updateScore(xWins, oWins);
         announceWinner();
     }
 
@@ -291,6 +314,8 @@ public class BoardsView extends JPanel implements ActionListener {
         do {
             boardIndex = random.nextInt(9);
         } while (boardIndex == previousBoardIndex || boardPlayed[boardIndex]);
+
+        currentBoardIndex = boardIndex;
 
         for (int i = 0; i < 9; i++) {
             if (boardPlayed[i]) {
