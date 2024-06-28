@@ -28,7 +28,6 @@ public class BoardsView extends JPanel implements ActionListener {
 
     public BoardsView(GameHistoryView gameHistoryView, boolean singlePlayerMode, String difficulty) {
         this.gameHistoryView = gameHistoryView;
-        this.gameHistoryView = gameHistoryView;
         this.singlePlayerMode = singlePlayerMode;
         this.difficulty = difficulty;
 
@@ -145,6 +144,11 @@ public class BoardsView extends JPanel implements ActionListener {
     }
 
     private void makeBotMove() {
+        if (!hasAvailableBoards()) {
+            freezeBoard();
+            return;
+        }
+
         int availableBoardIndex = selectNextBoardIndex();
 
         currentBoardIndex = availableBoardIndex;
@@ -183,13 +187,11 @@ public class BoardsView extends JPanel implements ActionListener {
         }
     }
 
+
     private int selectNextBoardIndex() {
         if (difficulty.equals("Easy") || difficulty.equals("Medium")) {
             return selectRandomBoardIndex();
         } else if (difficulty.equals("Hard")) {
-            // Add logic here for hard difficulty
-            // For example, prioritize boards that can win or prevent opponent from winning
-            // Currently using random selection as placeholder
             return selectRandomBoardIndex();
         } else {
             return selectRandomBoardIndex();
@@ -203,49 +205,6 @@ public class BoardsView extends JPanel implements ActionListener {
         } while (boardPlayed[boardIndex]);
 
         return boardIndex;
-    }
-
-
-    private void makeRandomMove() {
-        int boardIndex;
-        do {
-            boardIndex = random.nextInt(9);
-        } while (boardPlayed[boardIndex]);
-
-        currentBoardIndex = boardIndex;
-
-        int cellIndex;
-        do {
-            cellIndex = random.nextInt(9);
-        } while (boardState[boardIndex][cellIndex] != ' ');
-
-        int row = cellIndex / 3;
-        int col = cellIndex % 3;
-
-        JButton button = buttons[boardIndex][cellIndex];
-
-        if (xTurn) {
-            button.setIcon(xIcon);
-            button.setDisabledIcon(xIcon);
-            boardState[boardIndex][cellIndex] = 'X';
-        } else {
-            button.setIcon(oIcon);
-            button.setDisabledIcon(oIcon);
-            boardState[boardIndex][cellIndex] = 'O';
-        }
-        button.setEnabled(false);
-        xTurn = !xTurn;
-
-        searchForWinner(boardIndex, row, col);
-        gameHistoryView.addMove(xTurn ? 'O' : 'X', cellIndex, boardIndex);
-
-        previousBoardIndex = boardIndex;
-
-        if (checkForBoardsPlayed() < 8) {
-            chooseRandomBoardForNextMove();
-        } else {
-            enableButtons();
-        }
     }
 
     private void enableButtons() {
@@ -273,7 +232,7 @@ public class BoardsView extends JPanel implements ActionListener {
         char player = boardState[boardIndex][row * 3 + col];
 
         if (checkForTie(boardIndex)) {
-            highlightTiedBoard(boardIndex);
+            highlightWonBoard(boardIndex);
             disableBoardAfterWin(boardIndex);
             boardPlayed[boardIndex] = true;
             announceWinner();
@@ -350,15 +309,7 @@ public class BoardsView extends JPanel implements ActionListener {
     private void highlightWonBoard(int boardIndex) {
         for (int i = 0; i < 9; i++) {
             if (i == boardIndex) {
-                panels[i].setBackground(Color.RED);
-            }
-        }
-    }
-
-    private void highlightTiedBoard(int boardIndex) {
-        for (int i = 0; i < 9; i++) {
-            if (i == boardIndex) {
-                panels[i].setBackground(Color.BLUE);
+                panels[i].setBackground(Color.GRAY);
             }
         }
     }
@@ -433,7 +384,7 @@ public class BoardsView extends JPanel implements ActionListener {
 
         for (int i = 0; i < 9; i++) {
             if (boardPlayed[i]) {
-                panels[i].setBackground(Color.RED);
+                highlightWonBoard(i);
             } else {
                 panels[i].setBackground(null);
             }
