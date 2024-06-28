@@ -154,9 +154,13 @@ public class BoardsView extends JPanel implements ActionListener {
         currentBoardIndex = availableBoardIndex;
 
         int cellIndex;
-        do {
-            cellIndex = random.nextInt(9);
-        } while (boardState[availableBoardIndex][cellIndex] != ' ');
+        if (difficulty.equals("Medium") || difficulty.equals("Hard")) {
+            cellIndex = findBestMove(availableBoardIndex);
+        } else {
+            do {
+                cellIndex = random.nextInt(9);
+            } while (boardState[availableBoardIndex][cellIndex] != ' ');
+        }
 
         int row = cellIndex / 3;
         int col = cellIndex % 3;
@@ -187,15 +191,53 @@ public class BoardsView extends JPanel implements ActionListener {
         }
     }
 
+    private int findBestMove(int boardIndex) {
+        char botChar = xTurn ? 'X' : 'O';
+        char opponentChar = xTurn ? 'O' : 'X';
+
+        for (int i = 0; i < 9; i++) {
+            if (boardState[boardIndex][i] == ' ') {
+                boardState[boardIndex][i] = botChar;
+                if (isWinningMove(boardIndex, i)) {
+                    boardState[boardIndex][i] = ' ';
+                    return i;
+                }
+                boardState[boardIndex][i] = ' ';
+            }
+        }
+
+        for (int i = 0; i < 9; i++) {
+            if (boardState[boardIndex][i] == ' ') {
+                boardState[boardIndex][i] = opponentChar;
+                if (isWinningMove(boardIndex, i)) {
+                    boardState[boardIndex][i] = ' ';
+                    return i;
+                }
+                boardState[boardIndex][i] = ' ';
+            }
+        }
+
+        int cellIndex;
+        do {
+            cellIndex = random.nextInt(9);
+        } while (boardState[boardIndex][cellIndex] != ' ');
+
+        return cellIndex;
+    }
+
+    private boolean isWinningMove(int boardIndex, int cellIndex) {
+        int row = cellIndex / 3;
+        int col = cellIndex % 3;
+        char player = boardState[boardIndex][cellIndex];
+
+        return (boardState[boardIndex][row * 3] == player && boardState[boardIndex][row * 3 + 1] == player && boardState[boardIndex][row * 3 + 2] == player) ||
+                (boardState[boardIndex][col] == player && boardState[boardIndex][col + 3] == player && boardState[boardIndex][col + 6] == player) ||
+                (boardState[boardIndex][0] == player && boardState[boardIndex][4] == player && boardState[boardIndex][8] == player) ||
+                (boardState[boardIndex][2] == player && boardState[boardIndex][4] == player && boardState[boardIndex][6] == player);
+    }
 
     private int selectNextBoardIndex() {
-        if (difficulty.equals("Easy") || difficulty.equals("Medium")) {
-            return selectRandomBoardIndex();
-        } else if (difficulty.equals("Hard")) {
-            return selectRandomBoardIndex();
-        } else {
-            return selectRandomBoardIndex();
-        }
+        return selectRandomBoardIndex();
     }
 
     private int selectRandomBoardIndex() {
