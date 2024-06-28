@@ -263,6 +263,7 @@ public class BoardsView extends JPanel implements ActionListener {
         } else if (player == 'O') {
             oWins++;
         }
+        gameHistoryView.updateScore(xWins, oWins);
         announceWinner();
     }
 

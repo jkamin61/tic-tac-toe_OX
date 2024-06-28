@@ -7,12 +7,24 @@ import java.awt.*;
 public class GameHistoryView extends JPanel {
     private final JTable table;
     private final DefaultTableModel tableModel;
+    private final JLabel xScoreLabel;
+    private final JLabel oScoreLabel;
     private int moveNumber;
     private int xWins;
     private int oWins;
 
+
     public GameHistoryView() {
         setLayout(new BorderLayout());
+
+        xScoreLabel = new JLabel("Player X: 0 wins");
+        oScoreLabel = new JLabel("Player O: 0 wins");
+
+        JPanel scorePanel = new JPanel(new FlowLayout(FlowLayout.CENTER));
+        scorePanel.add(xScoreLabel);
+        scorePanel.add(oScoreLabel);
+
+        add(scorePanel, BorderLayout.NORTH);
 
         String[] columnNames = {"Move number", "Player", "Board", "Field on board"};
         tableModel = new DefaultTableModel(columnNames, 0);
@@ -36,8 +48,8 @@ public class GameHistoryView extends JPanel {
         this.oWins = oWins;
         String xScoreMessage = String.format("Player X: %d wins", xWins);
         String oScoreMessage = String.format("Player O: %d wins", oWins);
-        Object[] rowData = {xScoreMessage, oScoreMessage, "", ""};
-        tableModel.addRow(rowData);
+        xScoreLabel.setText(xScoreMessage);
+        oScoreLabel.setText(oScoreMessage);
     }
 
     private String getPosition(int buttonIndex) {
@@ -51,5 +63,8 @@ public class GameHistoryView extends JPanel {
         moveNumber = 0;
         xWins = 0;
         oWins = 0;
+
+        // Clear score labels
+        updateScore(0, 0); // Reset scores to 0
     }
 }
