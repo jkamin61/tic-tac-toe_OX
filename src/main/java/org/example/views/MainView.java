@@ -8,14 +8,19 @@ public class MainView extends JFrame {
     private final BoardsView boardsView;
     private final GameHistoryView gameHistoryView;
     private final MenuPanel menuPanel;
+    private final boolean singlePlayerMode;
+    private final String difficulty;
 
-    public MainView() {
+    public MainView(boolean singlePlayerMode, String difficulty) {
+        this.singlePlayerMode = singlePlayerMode;
+        this.difficulty = difficulty;
+
         frame = new JFrame("Tic Tac Toe");
         frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
         frame.setSize(1200, 600);
 
         gameHistoryView = new GameHistoryView();
-        boardsView = new BoardsView(gameHistoryView);
+        boardsView = new BoardsView(gameHistoryView, singlePlayerMode, difficulty);
         menuPanel = new MenuPanel(boardsView);
 
         frame.add(gameHistoryView, BorderLayout.EAST);
@@ -25,5 +30,4 @@ public class MainView extends JFrame {
         frame.setLocationRelativeTo(null);
         frame.setVisible(true);
     }
-
 }
