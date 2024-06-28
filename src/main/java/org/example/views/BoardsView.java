@@ -20,12 +20,16 @@ public class BoardsView extends JPanel implements ActionListener {
     boolean[] boardPlayed = new boolean[9];
     boolean boardFrozen = false;
     int currentBoardIndex;
+    private final boolean singlePlayerMode;
+    private final String difficulty;
 
     final ImageIcon xIcon;
     final ImageIcon oIcon;
 
-    public BoardsView(GameHistoryView gameHistoryView) {
+    public BoardsView(GameHistoryView gameHistoryView, boolean singlePlayerMode, String difficulty) {
         this.gameHistoryView = gameHistoryView;
+        this.singlePlayerMode = singlePlayerMode;
+        this.difficulty = difficulty;
 
         xIcon = scaleIcon(new ImageIcon("src/main/resources/X.png"), 50, 50);
         oIcon = scaleIcon(new ImageIcon("src/main/resources/O.png"), 50, 50);
@@ -133,6 +137,74 @@ public class BoardsView extends JPanel implements ActionListener {
         } else {
             enableButtons();
         }
+
+        if (singlePlayerMode && !xTurn) {
+            makeBotMove();
+        }
+    }
+
+    private void makeBotMove() {
+        if (!hasAvailableBoards()) {
+            freezeBoard();
+            return;
+        }
+
+        int availableBoardIndex = selectNextBoardIndex();
+
+        currentBoardIndex = availableBoardIndex;
+
+        int cellIndex;
+        do {
+            cellIndex = random.nextInt(9);
+        } while (boardState[availableBoardIndex][cellIndex] != ' ');
+
+        int row = cellIndex / 3;
+        int col = cellIndex % 3;
+
+        JButton button = buttons[availableBoardIndex][cellIndex];
+
+        if (xTurn) {
+            button.setIcon(xIcon);
+            button.setDisabledIcon(xIcon);
+            boardState[availableBoardIndex][cellIndex] = 'X';
+        } else {
+            button.setIcon(oIcon);
+            button.setDisabledIcon(oIcon);
+            boardState[availableBoardIndex][cellIndex] = 'O';
+        }
+        button.setEnabled(false);
+        xTurn = !xTurn;
+
+        searchForWinner(availableBoardIndex, row, col);
+        gameHistoryView.addMove(xTurn ? 'O' : 'X', cellIndex, availableBoardIndex);
+
+        previousBoardIndex = availableBoardIndex;
+
+        if (checkForBoardsPlayed() < 8) {
+            chooseRandomBoardForNextMove();
+        } else {
+            enableButtons();
+        }
+    }
+
+
+    private int selectNextBoardIndex() {
+        if (difficulty.equals("Easy") || difficulty.equals("Medium")) {
+            return selectRandomBoardIndex();
+        } else if (difficulty.equals("Hard")) {
+            return selectRandomBoardIndex();
+        } else {
+            return selectRandomBoardIndex();
+        }
+    }
+
+    private int selectRandomBoardIndex() {
+        int boardIndex;
+        do {
+            boardIndex = random.nextInt(9);
+        } while (boardPlayed[boardIndex]);
+
+        return boardIndex;
     }
 
     private void enableButtons() {
@@ -160,7 +232,7 @@ public class BoardsView extends JPanel implements ActionListener {
         char player = boardState[boardIndex][row * 3 + col];
 
         if (checkForTie(boardIndex)) {
-            highlightTiedBoard(boardIndex);
+            highlightWonBoard(boardIndex);
             disableBoardAfterWin(boardIndex);
             boardPlayed[boardIndex] = true;
             announceWinner();
@@ -237,15 +309,7 @@ public class BoardsView extends JPanel implements ActionListener {
     private void highlightWonBoard(int boardIndex) {
         for (int i = 0; i < 9; i++) {
             if (i == boardIndex) {
-                panels[i].setBackground(Color.RED);
-            }
-        }
-    }
-
-    private void highlightTiedBoard(int boardIndex) {
-        for (int i = 0; i < 9; i++) {
-            if (i == boardIndex) {
-                panels[i].setBackground(Color.BLUE);
+                panels[i].setBackground(Color.GRAY);
             }
         }
     }
@@ -320,7 +384,7 @@ public class BoardsView extends JPanel implements ActionListener {
 
         for (int i = 0; i < 9; i++) {
             if (boardPlayed[i]) {
-                panels[i].setBackground(Color.RED);
+                highlightWonBoard(i);
             } else {
                 panels[i].setBackground(null);
             }

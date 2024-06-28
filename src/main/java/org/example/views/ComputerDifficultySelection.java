@@ -2,44 +2,41 @@ package org.example.views;
 
 import javax.swing.*;
 import java.awt.*;
+import java.awt.event.ActionEvent;
 
 public class ComputerDifficultySelection extends JFrame {
 
-    JRadioButton easyButton = new JRadioButton("Easy");
-    JRadioButton mediumButton = new JRadioButton("Medium");
-    JRadioButton hardButton = new JRadioButton("Hard");
-    JButton confirmButton = new JButton("Confirm");
-    ButtonGroup group = new ButtonGroup();
-
     public ComputerDifficultySelection() {
-        setTitle("Tic Tac Toe");
+        setTitle("Select Difficulty");
         setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
 
         JPanel panel = new JPanel();
-        panel.setLayout(new BorderLayout());
+        panel.setLayout(new GridLayout(3, 1));
 
-        JLabel label = new JLabel("Select Computer Difficulty");
-        panel.add(label, BorderLayout.NORTH);
+        JLabel label = new JLabel("Select Difficulty Level:");
+        panel.add(label);
 
-        group.add(easyButton);
-        group.add(mediumButton);
-        group.add(hardButton);
+        JButton easyButton = new JButton("Easy");
+        JButton mediumButton = new JButton("Medium");
+        JButton hardButton = new JButton("Hard");
 
-        JPanel buttonPanel = new JPanel();
-        buttonPanel.add(easyButton);
-        buttonPanel.add(mediumButton);
-        buttonPanel.add(hardButton);
-        buttonPanel.add(confirmButton);
-        panel.add(buttonPanel, BorderLayout.CENTER);
+        panel.add(easyButton);
+        panel.add(mediumButton);
+        panel.add(hardButton);
 
-        confirmButton.addActionListener(e -> {
-            setVisible(false);
-            new MainView();
-        });
+        easyButton.addActionListener(this::startGameWithBot);
+        mediumButton.addActionListener(this::startGameWithBot);
+        hardButton.addActionListener(this::startGameWithBot);
 
         getContentPane().add(panel);
         pack();
         setLocationRelativeTo(null);
         setVisible(true);
+    }
+
+    private void startGameWithBot(ActionEvent e) {
+        setVisible(false);
+        String difficulty = ((JButton) e.getSource()).getText();
+        new MainView(true, difficulty);
     }
 }

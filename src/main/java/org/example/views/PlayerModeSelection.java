@@ -30,7 +30,7 @@ public class PlayerModeSelection extends JFrame {
 
         multiPlayerButton.addActionListener(e -> {
             setVisible(false);
-            new MainView();
+            new MainView(false, null);
         });
 
         getContentPane().add(panel);
