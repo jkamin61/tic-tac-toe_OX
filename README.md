@@ -57,6 +57,7 @@ In multiplayer mode, two players can play on the same device. Players take turns
 
 ## Controls
 The game supports keyboard controls using the num pad for making moves. The num pad layout corresponds to the cells on the board as follows:
+
 -
 7 | 8 | 9
 ---------
